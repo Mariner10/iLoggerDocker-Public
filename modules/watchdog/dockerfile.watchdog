@@ -1,0 +1,16 @@
+# Base image
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /watchdog
+
+# Copy project files
+COPY ./modules/watchdog /watchdog
+RUN mkdir /watchdog/lib
+COPY ./lib /watchdog/lib
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the application
+CMD ["python3", "watchdog.py"]

@@ -1,0 +1,21 @@
+# Base image
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /database_interactor
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY ./modules/database_interactor /database_interactor
+RUN mkdir /database_interactor/lib
+COPY ./lib /database_interactor/lib
+
+# Install dependencies
+RUN pip install --no-cache-dir -r database_interactor.txt
+
+# Run the application
+CMD ["python3", "database_interactor.py"]

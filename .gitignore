@@ -1,0 +1,8 @@
+*.env
+dev/iLogger_rules.json
+*.venv
+*.log
+*DS_Store
+*pycache*
+
+modules/icloud_interactor/lib

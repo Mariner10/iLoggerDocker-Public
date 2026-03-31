@@ -1,0 +1,16 @@
+# Base image
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /icloud_interactor
+
+# Copy project files
+COPY ./modules/icloud_interactor /icloud_interactor
+RUN mkdir /icloud_interactor/lib
+COPY ./lib /icloud_interactor/lib
+
+# Install dependencies
+RUN pip install --no-cache-dir -r icloud_interactor_requirements.txt
+
+# Run the application
+CMD ["python3", "icloud_interactor.py"]

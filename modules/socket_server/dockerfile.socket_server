@@ -1,0 +1,16 @@
+# Base image
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /socket_server
+
+# Copy project files
+COPY ./modules/socket_server /socket_server
+RUN mkdir /socket_server/lib
+COPY ./lib /socket_server/lib
+
+# Install dependencies
+RUN pip install --no-cache-dir -r socket_server_requirements.txt
+
+# Run the application
+CMD ["python3", "socket_server.py"]

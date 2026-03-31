@@ -1,0 +1,12 @@
+# Use the official image as a base
+FROM timescale/timescaledb-ha:pg16
+
+# Switch to root to ensure we have permission to write
+USER root
+
+# Copy the init script directly into the special initialization folder
+# (Docker handles the permissions automatically during COPY)
+COPY --chown=postgres:postgres ./modules/db/init.sql /docker-entrypoint-initdb.d/01_init.sql
+
+# Switch back to the postgres user for safety
+USER postgres

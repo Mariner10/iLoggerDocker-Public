@@ -1,0 +1,3 @@
+docker
+websockets
+python-dotenv

@@ -1,0 +1,129 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: modules/db/dockerfile.db
+    container_name: tracking_postgis
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/home/postgres/pgdata/data
+    ports:
+      - "5432:5432"
+    networks:
+      - device_network
+    shm_size: '256mb'
+    mem_limit: 3g
+    memswap_limit: 3g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+
+  database_interactor:
+    build:
+      context: .
+      dockerfile: modules/database_interactor/dockerfile.database_interactor
+    restart: always
+    container_name: database_interactor
+    environment:
+      DB_HOST: db
+      CONTAINER_NAME: database_interactor
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - device_network
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import os; os.kill(1, 0)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  icloud_interactor:
+    build:
+      context: .
+      dockerfile: modules/icloud_interactor/dockerfile.icloud_interactor
+    restart: always
+    container_name: icloud_interactor
+    environment:
+      CONTAINER_NAME: icloud_interactor
+      APPID: ${APPID}
+      APPSECRET: ${APPSECRET}
+      MAIN_DEVICE: ${MAIN_DEVICE}
+    networks:
+      - device_network
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import os; os.kill(1, 0)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  watchdog:
+    container_name: watchdog
+    build:
+      context: .
+      dockerfile: modules/watchdog/dockerfile.watchdog
+    environment:
+      SOCKET_SERVER_CONTAINER_NAME: socket_server
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - device_network
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import os; os.kill(1, 0)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  socket_server:
+    build:
+      context: .
+      dockerfile: modules/socket_server/dockerfile.socket_server
+    restart: always
+    container_name: socket_server
+    environment:
+      CONTAINER_NAME: socket_server
+    ports:
+      - "8765:8765"
+    networks:
+      - device_network
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect((\"localhost\", 8765))'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  socket_ears:
+    build:
+      context: .
+      dockerfile: modules/socket_ears/dockerfile.socket_ears
+    restart: always
+    container_name: socket_ears
+    environment:
+      CONTAINER_NAME: socket_ears
+    volumes:
+      - vault_data:/logs
+    networks:
+      - device_network
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import os; os.kill(1, 0)'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+networks:
+  device_network:
+
+volumes:
+  postgres_data:
+  vault_data:

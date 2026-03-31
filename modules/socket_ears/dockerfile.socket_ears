@@ -1,0 +1,16 @@
+# Base image
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /socket_ears
+
+# Copy project files
+COPY ./modules/socket_ears /socket_ears
+RUN mkdir /socket_ears/lib
+COPY ./lib /socket_ears/lib
+
+# Install dependencies
+RUN pip install --no-cache-dir -r socket_ears_requirements.txt
+
+# Run the application
+CMD ["python3", "socket_ears.py"]
